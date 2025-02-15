@@ -10,20 +10,143 @@ export type Json =
 export interface Database {
   public: {
     Tables: {
-      transactions: {
+      users: {
         Row: {
           id: string
-          amount: number
-          category: 'food' | 'transport' | 'other'
-          date: string
-          user_id: string
+          email: string
           created_at: string
         }
         Insert: {
-          amount: number
-          category: 'food' | 'transport' | 'other'
-          date?: string
+          id?: string
+          email: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          email?: string
+          created_at?: string
+        }
+      }
+      wallets: {
+        Row: {
+          id: string
           user_id: string
+          name: string
+          balance: number
+          currency: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          name: string
+          balance: number
+          currency: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          name?: string
+          balance?: number
+          currency?: string
+          created_at?: string
+        }
+      }
+      categories: {
+        Row: {
+          id: string
+          user_id: string
+          name: string
+          type: 'INCOME' | 'EXPENSE'
+          color: string
+          icon: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          name: string
+          type: 'INCOME' | 'EXPENSE'
+          color: string
+          icon: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          name?: string
+          type?: 'INCOME' | 'EXPENSE'
+          color?: string
+          icon?: string
+          created_at?: string
+        }
+      }
+      transactions: {
+        Row: {
+          id: string
+          user_id: string
+          wallet_id: string
+          category_id: string
+          amount: number
+          type: 'INCOME' | 'EXPENSE'
+          description: string
+          date: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          wallet_id: string
+          category_id: string
+          amount: number
+          type: 'INCOME' | 'EXPENSE'
+          description: string
+          date: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          wallet_id?: string
+          category_id?: string
+          amount?: number
+          type?: 'INCOME' | 'EXPENSE'
+          description?: string
+          date?: string
+          created_at?: string
+        }
+      }
+      budgets: {
+        Row: {
+          id: string
+          user_id: string
+          category_id: string
+          amount: number
+          period: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY'
+          start_date: string
+          end_date: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          category_id: string
+          amount: number
+          period: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY'
+          start_date: string
+          end_date: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          category_id?: string
+          amount?: number
+          period?: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY'
+          start_date?: string
+          end_date?: string
+          created_at?: string
         }
       }
     }
