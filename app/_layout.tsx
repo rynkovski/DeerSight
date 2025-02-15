@@ -1,59 +1,81 @@
-import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
+// app/_layout.tsx
 import { Stack } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
-import 'react-native-reanimated';
-
-import { useColorScheme } from '@/components/useColorScheme';
-
-export {
-  // Catch any errors thrown by the Layout component.
-  ErrorBoundary,
-} from 'expo-router';
-
-export const unstable_settings = {
-  // Ensure that reloading on `/modal` keeps a back button present.
-  initialRouteName: '(tabs)',
-};
-
-// Prevent the splash screen from auto-hiding before asset loading is complete.
-SplashScreen.preventAutoHideAsync();
+import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
+import { useProtectedRoute } from '@/middleware';
+import { useSessionMonitor } from '@/hooks/useSessionMonitor';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { Alert } from 'react-native';
 
 export default function RootLayout() {
-  const [loaded, error] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-    ...FontAwesome.font,
-  });
+  const { session, isLoading } = useSupabaseAuth();
+  useProtectedRoute();
+  useSessionMonitor();
 
-  // Expo Router uses Error Boundaries to catch errors in the navigation tree.
-  useEffect(() => {
-    if (error) throw error;
-  }, [error]);
-
-  useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
-    }
-  }, [loaded]);
-
-  if (!loaded) {
-    return null;
+  // Handle loading state
+  if (isLoading) {
+    return null; // lub komponent loading
   }
 
-  return <RootLayoutNav />;
+  return (
+    <SafeAreaProvider>
+      <ErrorBoundary>
+        <Stack>
+          {!session ? (
+            // Przekieruj do logowania jeśli nie ma sesji
+            <Stack.Screen 
+              name="auth" 
+              options={{ headerShown: false }} 
+            />
+          ) : (
+            // Użytkownik zalogowany - pokaż główną aplikację
+            <Stack.Screen 
+              name="(tabs)" 
+              options={{ headerShown: false }} 
+            />
+          )}
+        </Stack>
+      </ErrorBoundary>
+    </SafeAreaProvider>
+  );
 }
 
-function RootLayoutNav() {
-  const colorScheme = useColorScheme();
+// Dodajmy też potrzebny komponent ErrorBoundary
+// components/ErrorBoundary.tsx
+import React from 'react';
+import { View, Text } from 'react-native';
 
-  return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-      </Stack>
-    </ThemeProvider>
-  );
+interface Props {
+  children: React.ReactNode;
+}
+
+interface State {
+  hasError: boolean;
+}
+
+export class ErrorBoundary extends React.Component<Props, State> {
+  constructor(props: Props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(_: Error): State {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: Error) {
+    console.error('Error caught in boundary:', error);
+    Alert.alert('Error', 'Something went wrong. Please try again.');
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <Text>Something went wrong. Please restart the app.</Text>
+        </View>
+      );
+    }
+
+    return this.props.children;
+  }
 }

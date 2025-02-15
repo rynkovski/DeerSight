@@ -1,14 +1,31 @@
-import { StyleSheet } from 'react-native';
+// app/(tabs)/index.tsx
+import { View, StyleSheet } from 'react-native';
 
-import EditScreenInfo from '@/components/EditScreenInfo';
-import { Text, View } from '@/components/Themed';
+import { TransactionList } from '@/components/transactions/TransactionList';
+import { useTransactions } from '@/hooks/useTransactions';
+import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
+import { Text } from '@/components/Themed';
 
-export default function TabOneScreen() {
+export default function HomeScreen() {
+  const { transactions, isLoading, refreshTransactions } = useTransactions();
+  const { session } = useSupabaseAuth();
+
+  const totalAmount = transactions.reduce((sum, t) => sum + t.amount, 0);
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Tab One</Text>
-      <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-      <EditScreenInfo path="app/(tabs)/index.tsx" />
+      <View style={styles.header}>
+        <Text style={styles.title}>Welcome, {session?.user.email}</Text>
+        <Text style={styles.total}>
+          Total: ${totalAmount.toFixed(2)}
+        </Text>
+      </View>
+      
+      <TransactionList 
+        transactions={transactions}
+        isLoading={isLoading}
+        onRefresh={refreshTransactions}
+      />
     </View>
   );
 }
@@ -16,16 +33,17 @@ export default function TabOneScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    padding: 16,
+  },
+  header: {
+    marginBottom: 20,
   },
   title: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: 'bold',
   },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: '80%',
+  total: {
+    fontSize: 18,
+    marginTop: 8,
   },
 });
