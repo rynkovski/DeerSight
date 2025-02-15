@@ -1,4 +1,4 @@
-// app/(tabs)/_layout.tsx
+
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Platform } from 'react-native';
@@ -11,18 +11,18 @@ export default function TabLayout() {
   return (
     <View style={{ flex: 1, paddingTop: insets.top, backgroundColor: 'white' }}>
     <Tabs screenOptions={{
-      headerShown: false, // This will hide the header
+      headerShown: false,
       tabBarStyle: {
         borderTopWidth: 1,
         borderTopColor: '#F5F5F5',
         backgroundColor: '#fff',
          height: Platform.select({
-          ios: 40 + insets.bottom, // Adjust height for iOS devices with safe area
+          ios: 40 + insets.bottom, 
           android: 60,
         }),
         paddingTop: 8,
         paddingBottom: Platform.select({
-          ios: insets.bottom + 8, // Add safe area padding for iOS
+          ios: insets.bottom + 8, 
           android: 8,
         }),
       

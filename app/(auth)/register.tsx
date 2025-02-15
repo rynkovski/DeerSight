@@ -1,6 +1,6 @@
-// app/(auth)/register.tsx
+
 import { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity } from 'react-native';
 import { Link, useRouter } from 'expo-router';
 import { useAuth } from '../../contexts/AuthContext';
 import { styles } from './styles';
@@ -46,7 +46,6 @@ export default function Register() {
 
     const success = await signUp(email, password);
     if (success) {
-      // Show success message about email verification
       alert('Please check your email to verify your account');
       router.replace('/login');
     }

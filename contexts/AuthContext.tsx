@@ -6,7 +6,7 @@ import { supabase } from '../lib/supabase'
 interface AuthContextType {
   signUp: (email: string, password: string) => Promise<boolean>
   signIn: (email: string, password: string) => Promise<boolean>
-  signOut: () => Promise<void> // Added signOut method
+  signOut: () => Promise<void> 
   user: User | null
   session: Session | null
   loading: boolean
@@ -80,7 +80,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  // Added signOut method
+
   const signOut = async () => {
     try {
       setLoading(true)
@@ -99,7 +99,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     <AuthContext.Provider value={{
       signUp,
       signIn,
-      signOut, // Added to the provider value
+      signOut, 
       user,
       session,
       loading,
