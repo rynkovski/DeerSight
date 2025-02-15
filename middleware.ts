@@ -1,31 +1,25 @@
 // middleware.ts
 import { useEffect } from 'react';
-import { Redirect, useRootNavigationState, useSegments } from 'expo-router';
+import { useRouter, useSegments } from 'expo-router';
 import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
-
-// Grupy ścieżek wymagające autoryzacji
-const PROTECTED_SEGMENTS = ['(tabs)'];
 
 export function useProtectedRoute() {
   const segments = useSegments();
+  const router = useRouter();
   const { session, isLoading } = useSupabaseAuth();
-  const navigationState = useRootNavigationState();
 
   useEffect(() => {
-    if (!navigationState?.key || isLoading) return;
+    if (isLoading) return;
 
-    const inProtectedRoute = PROTECTED_SEGMENTS.includes(segments[0]);
+    const inProtectedRoute = segments[0] === '(tabs)';
+    const isAuthenticated = !!session;
 
-    if (!session && inProtectedRoute) {
-      // Przekieruj do logowania jeśli użytkownik próbuje dostać się do chronionej ścieżki
-      return <Redirect href="/auth" />;
+    if (!isAuthenticated && inProtectedRoute) {
+      // Jeśli użytkownik nie jest zalogowany a próbuje dostać się do chronionej części
+      router.push('..');
+    } else if (isAuthenticated && !inProtectedRoute) {
+      // Jeśli użytkownik jest zalogowany, przekieruj do głównej części aplikacji
+      router.push('/(tabs)');
     }
-
-    if (session && !inProtectedRoute) {
-      // Przekieruj do głównej aplikacji jeśli użytkownik jest zalogowany
-      return <Redirect href="/(tabs)" />;
-    }
-  }, [session, segments, navigationState?.key]);
-
-  return null;
+  }, [session, segments, isLoading]);
 }
