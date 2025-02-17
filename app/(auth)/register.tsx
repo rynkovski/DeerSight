@@ -1,55 +1,67 @@
 
 import { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
 import { Link, useRouter } from 'expo-router';
-import { useAuth } from '../../contexts/AuthContext';
+import { supabase } from '@/lib/supabase';
 import { styles } from './styles';
+import { AuthState } from '@/types/auth';
 
 export default function Register() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [validationError, setValidationError] = useState<string | null>(null);
-  const { signUp, error: authError, loading } = useAuth();
+  const [authState, setAuthState] = useState<AuthState>({
+    loading: false,
+    error: null,
+  });
+  
   const router = useRouter();
 
-  const validateForm = () => {
+  const validateForm = (): string | null => {
     if (!email || !password || !confirmPassword) {
-      setValidationError('All fields are required');
-      return false;
+      return 'All fields are required';
     }
-
-    if (password.length < 6) {
-      setValidationError('Password must be at least 6 characters');
-      return false;
-    }
-
     if (password !== confirmPassword) {
-      setValidationError('Passwords do not match');
-      return false;
+      return 'Passwords do not match';
     }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      setValidationError('Please enter a valid email');
-      return false;
+    if (password.length < 6) {
+      return 'Password must be at least 6 characters';
     }
-
-    setValidationError(null);
-    return true;
+    return null;
   };
 
-  const handleRegister = async () => {
-    if (!validateForm()) {
+  async function signUpWithEmail() {
+    const validationError = validateForm();
+    if (validationError) {
+      setAuthState(prev => ({ ...prev, error: { message: validationError } }));
       return;
     }
 
-    const success = await signUp(email, password);
-    if (success) {
-      alert('Please check your email to verify your account');
-      router.replace('/login');
+    setAuthState(prev => ({ ...prev, loading: true, error: null }));
+
+    try {
+      const { data: { session }, error } = await supabase.auth.signUp({
+        email,
+        password,
+      });
+
+      if (error) throw error;
+
+      if (!session) {
+        Alert.alert('Success', 'Please check your inbox for email verification!');
+        router.push('/login');
+      } else {
+        router.push('/(tabs)');
+      }
+    } catch (error) {
+      setAuthState(prev => ({
+        ...prev,
+        error: { message: (error as Error).message }
+      }));
+    } finally {
+      setAuthState(prev => ({ ...prev, loading: false }));
     }
-  };
+  }
 
   return (
     <View style={styles.container}>
@@ -64,13 +76,10 @@ export default function Register() {
           style={styles.input}
           placeholder="Email"
           value={email}
-          onChangeText={(text) => {
-            setEmail(text);
-            setValidationError(null);
-          }}
+          onChangeText={setEmail}
           autoCapitalize="none"
           keyboardType="email-address"
-          editable={!loading}
+          editable={!authState.loading}
         />
 
         <Text style={styles.label}>Password</Text>
@@ -78,12 +87,9 @@ export default function Register() {
           style={styles.input}
           placeholder="Password"
           value={password}
-          onChangeText={(text) => {
-            setPassword(text);
-            setValidationError(null);
-          }}
+          onChangeText={setPassword}
           secureTextEntry
-          editable={!loading}
+          editable={!authState.loading}
         />
 
         <Text style={styles.label}>Confirm Password</Text>
@@ -91,24 +97,22 @@ export default function Register() {
           style={styles.input}
           placeholder="Confirm Password"
           value={confirmPassword}
-          onChangeText={(text) => {
-            setConfirmPassword(text);
-            setValidationError(null);
-          }}
+          onChangeText={setConfirmPassword}
           secureTextEntry
-          editable={!loading}
+          editable={!authState.loading}
         />
         
-        {validationError && <Text style={styles.errorText}>{validationError}</Text>}
-        {authError && <Text style={styles.errorText}>{authError}</Text>}
+        {authState.error && (
+          <Text style={styles.errorText}>{authState.error.message}</Text>
+        )}
         
         <TouchableOpacity 
-          style={[styles.button, loading && styles.buttonDisabled]}
-          onPress={handleRegister}
-          disabled={loading}
+          style={[styles.button, authState.loading && styles.buttonDisabled]}
+          onPress={signUpWithEmail}
+          disabled={authState.loading}
         >
           <Text style={styles.buttonText}>
-            {loading ? 'Creating account...' : 'Create Account'}
+            {authState.loading ? 'Creating account...' : 'Create Account'}
           </Text>
         </TouchableOpacity>
 

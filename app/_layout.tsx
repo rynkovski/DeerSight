@@ -1,45 +1,59 @@
-import { useEffect } from 'react';
-import { Stack, useRouter, useSegments } from 'expo-router';
-import { AuthProvider, useAuth } from '../contexts/AuthContext';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-function AuthGuard() {
-  const { user, loading } = useAuth();
+import { AuthProvider, useAuth } from '@/contexts/AuthContext';
+import { Stack } from 'expo-router';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { useEffect } from 'react';
+import { useRouter, useSegments } from 'expo-router';
+import { LoadingScreen } from '@/components/LoadingScreen';
+
+function AuthMiddleware() {
+  const { session, loading } = useAuth();
   const segments = useSegments();
   const router = useRouter();
 
   useEffect(() => {
     if (loading) return;
 
-    const inAuthGroup = segments[0] === '(auth)';
+  const firstSegment = segments[0];
 
-    if (!user && !inAuthGroup) {
+    // Check if we're in the auth group
+    const inAuthGroup = firstSegment === '(auth)';
+    // Check if we're at the root/welcome screen
+    const inWelcomeScreen = !firstSegment 
 
-      router.replace('/welcome');
-    } else if (user && inAuthGroup) {
+    // Allow access to welcome screen regardless of auth state
+    if (inWelcomeScreen) return;
 
+    if (!session && !inAuthGroup) {
+      router.replace('/(auth)/login');
+    } else if (session && inAuthGroup) {
       router.replace('/(tabs)');
     }
-  }, [user, loading, segments]);
+  }, [session, loading, segments]);
+
+  if (loading) {
+    return <LoadingScreen />;
+  }
 
   return null;
 }
 
 export default function RootLayout() {
   return (
-  
-       <SafeAreaProvider>
-      <AuthProvider>
-      <AuthGuard />
-
-        <Stack screenOptions={{
-          headerShown: false,
-          contentStyle: { backgroundColor: 'white' }
-        }}>
+    <AuthProvider>
+      <SafeAreaProvider>
+        <AuthMiddleware />
+        <Stack 
+          screenOptions={{
+            headerShown: false,
+            contentStyle: { backgroundColor: 'white' }
+          }}
+        >
+          <Stack.Screen name="index" options={{ headerShown: false }} />
           <Stack.Screen name="(auth)" options={{ headerShown: false }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         </Stack>
-      </AuthProvider>
-    </SafeAreaProvider>
+      </SafeAreaProvider>
+    </AuthProvider>
   );
 }

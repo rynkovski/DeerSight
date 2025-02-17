@@ -1,21 +1,52 @@
+
 import { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
 import { Link, useRouter } from 'expo-router';
-import { useAuth } from '../../contexts/AuthContext';
+import { supabase } from '@/lib/supabase';
 import { styles } from './styles';
+import { AuthState } from '@/types/auth';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const { signIn, error, loading } = useAuth();
+  const [authState, setAuthState] = useState<AuthState>({
+    loading: false,
+    error: null,
+  });
+  
   const router = useRouter();
 
-  const handleLogin = async () => {
-    const success = await signIn(email, password);
-    if (success) {
-      router.replace('/(tabs)');
+  async function signInWithEmail() {
+    if (!email || !password) {
+      setAuthState(prev => ({
+        ...prev,
+        error: { message: 'Please enter both email and password' }
+      }));
+      return;
     }
-  };
+
+    setAuthState(prev => ({ ...prev, loading: true, error: null }));
+
+    try {
+      const { error, data: { session } } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) throw error;
+
+      if (session) {
+        router.push('/(tabs)');
+      }
+    } catch (error) {
+      setAuthState(prev => ({
+        ...prev,
+        error: { message: (error as Error).message }
+      }));
+    } finally {
+      setAuthState(prev => ({ ...prev, loading: false }));
+    }
+  }
 
   return (
     <View style={styles.container}>
@@ -33,25 +64,30 @@ export default function Login() {
           onChangeText={setEmail}
           autoCapitalize="none"
           keyboardType="email-address"
+          editable={!authState.loading}
         />
-        <Text style={styles.label}>Password</Text>
 
+        <Text style={styles.label}>Password</Text>
         <TextInput
           style={styles.input}
           placeholder="Password"
           value={password}
           onChangeText={setPassword}
           secureTextEntry
+          editable={!authState.loading}
         />
-        {error && <Text style={styles.errorText}>{error}</Text>}
+        
+        {authState.error && (
+          <Text style={styles.errorText}>{authState.error.message}</Text>
+        )}
         
         <TouchableOpacity 
-          style={styles.button}
-          onPress={handleLogin}
-          disabled={loading}
+          style={[styles.button, authState.loading && styles.buttonDisabled]}
+          onPress={signInWithEmail}
+          disabled={authState.loading}
         >
           <Text style={styles.buttonText}>
-            {loading ? 'Signing in...' : 'Sign In'}
+            {authState.loading ? 'Signing in...' : 'Sign In'}
           </Text>
         </TouchableOpacity>
 
