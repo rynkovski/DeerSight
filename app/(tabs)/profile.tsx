@@ -1,20 +1,23 @@
+import { useSignOut } from '@/hooks/useSignOut';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { useAuth } from '../../contexts/AuthContext';
+
 
 
 
 
 export default function ProfileScreen() {
-  const { user, signOut } = useAuth();
+  const signOut = useSignOut();
 
   return (
     <View style={styles.container}>
      <View style={styles.header}>
       <Text style={styles.title}>Profile</Text>
-      <Text style={styles.email}>{user?.email}</Text>
-      <TouchableOpacity style={styles.button} onPress={signOut}>
-        <Text style={styles.buttonText}>Sign Out</Text>
+
+
+      <TouchableOpacity onPress={signOut}>
+        <Text>Sign Out</Text>
       </TouchableOpacity>
+
      </View>
       <View style={styles.infoContainer}>
         <Text style={styles.sectionTitle}>Account Information</Text>

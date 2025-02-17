@@ -4,9 +4,17 @@ import { Ionicons } from '@expo/vector-icons';
 import { Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { View } from '@/components/Themed';
+import { useAuth } from '@/contexts/AuthContext';
+
 
 export default function TabLayout() {
  const insets = useSafeAreaInsets();
+  const { session } = useAuth();
+
+  // Additional security check
+  if (!session) {
+    return null;
+  }
 
   return (
     <View style={{ flex: 1, paddingTop: insets.top, backgroundColor: 'white' }}>
@@ -72,6 +80,7 @@ export default function TabLayout() {
         }}
       />
     </Tabs>
+  
     </View>
   );
 }
