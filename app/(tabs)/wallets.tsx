@@ -1,34 +1,41 @@
 
 
-import { useState } from "react"
-import { View, Text, StyleSheet, FlatList, TouchableOpacity } from "react-native"
-import { FontAwesome } from "@expo/vector-icons"
-import WalletItem, { Wallet } from "@/components/wallets/WalletItem"
-import AddWalletModal from "@/components/wallets/AddWalletModal"
+import { useEffect, useState } from "react"
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Platform } from "react-native"
 
-const initialWallets: Wallet[] = [
-  { id: "1", name: "Cash", balance: 1000, type: "cash" },
-  { id: "2", name: "Bank Account", balance: 5000, type: "bank" },
-  { id: "3", name: "Credit Card", balance: -500, type: "credit" },
-  { id: "4", name: "Savings", balance: 10000, type: "savings" },
-]
+import WalletItem, { Wallet } from "@/components/wallets/WalletItem"
+import WalletDrawer from "@/components/wallets/WalletDrawer"
+import { useAuth } from "@/contexts/AuthContext"
+import { walletQueries } from "@/lib/queries"
+import { Ionicons } from "@expo/vector-icons"
+
+
 
 export default function WalletsScreen() {
-  const [wallets, setWallets] = useState<Wallet[]>(initialWallets)
+  const {session} = useAuth();
   const [isModalVisible, setIsModalVisible] = useState(false)
+  const [wallets, setWallets] = useState<Wallet[]>([])
+  if (!session) return;
+
+  useEffect(() => {
+        const fetchWallets = async () => {
+          try {
+            const data = await walletQueries.getAll(session.user.id);
+            setWallets(data);
+          } catch (error) {
+            console.error('Error fetching WasetWallets:', error);
+          }
+        };
+    
+        fetchWallets();
+      }, [wallets]);
 
   const totalBalance = wallets.reduce((sum, wallet) => sum + wallet.balance, 0)
 
-  const handleAddWallet = (newWallet: Omit<Wallet, "id">) => {
-    const wallet: Wallet = {
-      ...newWallet,
-      id: (wallets.length + 1).toString(),
-    }
-    setWallets([...wallets, wallet])
-  }
 
   return (
-    <View style={styles.container}>
+    <View style={ styles.container}>
+      <View style={isModalVisible && styles.drawerOpen}></View>
       <Text style={styles.title}>Wallets</Text>
       <View style={styles.totalBalanceContainer}>
         <Text style={styles.totalBalanceLabel}>Total Balance</Text>
@@ -41,10 +48,10 @@ export default function WalletsScreen() {
         style={styles.walletList}
       />
       <TouchableOpacity style={styles.addButton} onPress={() => setIsModalVisible(true)}>
-        <FontAwesome name="plus" size={20} color="#fff" />
+        <Ionicons name="add" size={20} color="#fff" />
         <Text style={styles.addButtonText}>Add Wallet</Text>
       </TouchableOpacity>
-      <AddWalletModal visible={isModalVisible} onClose={() => setIsModalVisible(false)} onAdd={handleAddWallet} />
+      <WalletDrawer visible={isModalVisible} onClose={() => setIsModalVisible(false)}  />
     </View>
   )
 }
@@ -53,7 +60,18 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: "#fff",
+  },
+  drawerOpen:{
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 1,
+
+    
   },
   title: {
     fontSize: 24,
@@ -61,7 +79,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   totalBalanceContainer: {
-    backgroundColor: "#2196F3",
+    backgroundColor: "#000",
     padding: 20,
     borderRadius: 10,
     marginBottom: 20,
@@ -79,7 +97,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   addButton: {
-    backgroundColor: "#2196F3",
+    backgroundColor: "#000",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
