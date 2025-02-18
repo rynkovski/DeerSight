@@ -1,3 +1,4 @@
+import { useAuth } from '@/contexts/AuthContext';
 import { useSignOut } from '@/hooks/useSignOut';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 
@@ -7,29 +8,29 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 
 export default function ProfileScreen() {
   const signOut = useSignOut();
+  const {session} = useAuth();
 
   return (
     <View style={styles.container}>
-     <View style={styles.header}>
+
       <Text style={styles.title}>Profile</Text>
 
-
-      <TouchableOpacity onPress={signOut}>
-        <Text>Sign Out</Text>
-      </TouchableOpacity>
-
-     </View>
       <View style={styles.infoContainer}>
         <Text style={styles.sectionTitle}>Account Information</Text>
-        <View style={styles.infoItem}>
-          <Text style={styles.infoLabel}>Member Since</Text>
-          <Text style={styles.infoValue}>January 1, 2023</Text>
+         <View style={styles.infoItem}>
+          <Text style={styles.infoLabel}>Email:</Text>
+          <Text style={styles.infoValue}>{session?.user.email}</Text>
         </View>
         <View style={styles.infoItem}>
-          <Text style={styles.infoLabel}>Subscription</Text>
-          <Text style={styles.infoValue}>Premium</Text>
+          <Text style={styles.infoLabel}>Member Since:</Text>
+          <Text style={styles.infoValue}>{session?.user.created_at.slice(0, 10)}</Text>
         </View>
       </View>
+
+      <TouchableOpacity onPress={signOut} style={styles.button}>
+        <Text style={styles.buttonText}>Sign Out</Text>
+      </TouchableOpacity>
+
     </View>
   )
 }
@@ -63,8 +64,8 @@ const styles = StyleSheet.create({
     color: "#000",
   },
   infoContainer: {
-    backgroundColor: "#fff",
-    margin: 20,
+    backgroundColor: "#f3f3f3",
+    margin: 4,
     padding: 20,
     borderRadius: 10,
   },
@@ -74,7 +75,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   infoItem: {
-    flexDirection: "row",
+    flexDirection: "column",
     justifyContent: "space-between",
     marginBottom: 10,
   },
@@ -97,7 +98,8 @@ const styles = StyleSheet.create({
   },
 
   button: {
-    backgroundColor: '#007AFF',
+    marginTop: 20,
+    backgroundColor: '#000',
     padding: 15,
     borderRadius: 8,
     alignItems: 'center',
