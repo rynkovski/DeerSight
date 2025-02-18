@@ -1,5 +1,8 @@
 import { View, Text, StyleSheet, FlatList, ScrollView } from "react-native"
 import { FontAwesome } from "@expo/vector-icons"
+import { useAuth } from "@/contexts/AuthContext"
+import { useEffect, useState } from "react"
+import { transactionQueries } from "@/lib/queries"
 
 type Transaction = {
   id: string
@@ -9,15 +12,28 @@ type Transaction = {
   date: string
 }
 
-const transactions: Transaction[] = [
-  { id: "1", type: "expense", category: "Food", amount: 25.5, date: "2023-04-15" },
-  { id: "2", type: "income", category: "Salary", amount: 3000, date: "2023-04-01" },
-  { id: "3", type: "expense", category: "Transport", amount: 50, date: "2023-04-10" },
-  { id: "4", type: "expense", category: "Shopping", amount: 100, date: "2023-04-05" },
-  { id: "5", type: "income", category: "Freelance", amount: 500, date: "2023-04-20" },
-]
+
 
 const TransactionsList = () => {
+    const {session} = useAuth();
+
+  
+     if (!session) return;
+  
+     const [transactions, setTransactions] = useState<Transaction[]>([]);
+  
+    useEffect(() => {
+      const fetchTransactions = async () => {
+        try {
+          const data = await transactionQueries.getAll(session.user.id);
+          setTransactions(data);
+        } catch (error) {
+          console.error('Error fetching transactions:', error);
+        }
+      };
+  
+      fetchTransactions();
+    }, [transactions]);
   const renderItem = ({ item }: { item: Transaction }) => (
     <View style={styles.transactionItem}>
       <View style={styles.iconContainer}>
@@ -52,7 +68,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
    listContent: {
-    paddingBottom: 80, // Space for FAB
+    paddingBottom: 80, 
   },
   transactionItem: {
     flexDirection: "row",
