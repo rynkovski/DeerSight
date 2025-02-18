@@ -47,6 +47,52 @@ export default function Register() {
 
       if (error) throw error;
 
+      const defaultCategories = [
+      {
+        name: '🛒 Groceries',
+        description: 'Food and household items',
+        icon: '🛒',
+        color: '#4CAF50'
+      },
+      {
+        name: '🚗 Transportation',
+        description: 'Car, public transit, and fuel expenses',
+        icon: '🚗',
+        color: '#2196F3'
+      },
+      {
+        name: '🎮 Entertainment',
+        description: 'Movies, games, and leisure activities',
+        icon: '🎮',
+        color: '#9C27B0'
+      },
+      {
+        name: '📱 Bills & Utilities',
+        description: 'Regular monthly expenses and utilities',
+        icon: '📱',
+        color: '#FF9800'
+      },
+      {
+        name: '🏥 Health',
+        description: 'Healthcare, medicine, and wellness expenses',
+        icon: '🏥',
+        color: '#F44336'
+      }
+    ];
+
+    const {  error: categoriesError } = await supabase
+      .from('categories')
+      .insert(
+        defaultCategories.map(category => ({
+          ...category,
+          user_id: session?.user.id
+        }))
+      )
+      .select();
+
+    if (categoriesError) throw categoriesError;
+
+
       if (!session) {
         Alert.alert('Success', 'Please check your inbox for email verification!');
         router.push('/login');

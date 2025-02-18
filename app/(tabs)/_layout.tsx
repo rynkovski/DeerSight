@@ -11,7 +11,6 @@ export default function TabLayout() {
  const insets = useSafeAreaInsets();
   const { session } = useAuth();
 
-  // Additional security check
   if (!session) {
     return null;
   }
@@ -53,11 +52,11 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="stats"
+        name="categories"
         options={{
-          title: 'Stats',
+          title: 'Categories',
           tabBarIcon: ({ color, size, focused }) => (
-            <Ionicons name={focused? "stats-chart" : "stats-chart-outline"} size={size} color={color} />
+            <Ionicons name={focused? "grid" : "grid-outline"} size={size} color={color} />
           ),
         }}
       />

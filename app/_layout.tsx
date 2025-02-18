@@ -16,12 +16,9 @@ function AuthMiddleware() {
 
   const firstSegment = segments[0];
 
-    // Check if we're in the auth group
     const inAuthGroup = firstSegment === '(auth)';
-    // Check if we're at the root/welcome screen
     const inWelcomeScreen = !firstSegment 
 
-    // Allow access to welcome screen regardless of auth state
     if (inWelcomeScreen) return;
 
     if (!session && !inAuthGroup) {
