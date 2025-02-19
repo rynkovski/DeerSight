@@ -22,14 +22,13 @@
       "icon":{
         "dark": "./assets/images/Dark.png",
         "light": "./assets/images/Light.png",
-      "tinted":"./assets/images/Tinted.png"
+        "tinted":"./assets/images/Tinted.png"
       }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "monochromeImage": "./assets/images/adaptive-icon.png",
-        "backgroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       }
     },

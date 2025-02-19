@@ -42,6 +42,9 @@ export default function HomeScreen() {
   
       fetchCategories();
     }, [categories,wallets]);
+
+  const totalBalance = wallets.reduce((sum, wallet) => sum + wallet.balance, 0)
+
  
   return (
     <View style={styles.container}>
@@ -49,7 +52,7 @@ export default function HomeScreen() {
       <Text style={styles.title}>{session?.user.email}</Text>
       <View style={styles.balanceContainer}>
         <Text style={styles.balanceLabel}>Total Balance</Text>
-        <Text style={styles.balanceAmount}>$5,234.56</Text>
+        <Text style={styles.balanceAmount}>${totalBalance.toFixed(2)}</Text>
       </View>
       <View style={styles.recentTransactions}>
         <Text style={styles.sectionTitle}>Recent Transactions</Text>

@@ -18,7 +18,6 @@ import type { Database } from '@/types/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 
 
-type CategoryRow = Database['public']['Tables']['categories']['Row'];
 type CategoryInsert = Database['public']['Tables']['categories']['Insert'];
 
 const CATEGORY_COLORS = [
@@ -39,7 +38,6 @@ type CategoryDrawerProps = {
 export default function CategoryDrawer({ visible, onClose }: CategoryDrawerProps) {
   const { session } = useAuth();
   const [name, setName] = useState('');
-  const [type, setType] = useState<CategoryRow['type']>('EXPENSE');
   const [selectedColor, setSelectedColor] = useState(CATEGORY_COLORS[0]);
   const [selectedIcon, setSelectedIcon] = useState(CATEGORY_ICONS[0]);
   const [isLoading, setIsLoading] = useState(false);
@@ -59,7 +57,6 @@ export default function CategoryDrawer({ visible, onClose }: CategoryDrawerProps
       const newCategory: CategoryInsert = {
         user_id: session.user.id,
         name: name.trim(),
-        type,
         color: selectedColor,
         icon: selectedIcon,
       };
@@ -68,7 +65,7 @@ export default function CategoryDrawer({ visible, onClose }: CategoryDrawerProps
 
       // Reset form
       setName('');
-      setType('EXPENSE');
+
       setSelectedColor(CATEGORY_COLORS[0]);
       setSelectedIcon(CATEGORY_ICONS[0]);
       onClose();
@@ -114,34 +111,6 @@ export default function CategoryDrawer({ visible, onClose }: CategoryDrawerProps
               placeholder="Category name"
 
             />
-            <Text style={styles.label}>Type</Text>
-            <View style={styles.typeContainer}>
-              <TouchableOpacity
-                style={[
-                  styles.typeButton,
-                  type === 'EXPENSE' && styles.typeButtonActive,
-                ]}
-                onPress={() => setType('EXPENSE')}
-              >
-                <Text style={[
-                  styles.typeButtonText,
-                  type === 'EXPENSE' && styles.typeButtonTextActive,
-                ]}>Expense</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[
-                  styles.typeButton,
-                  type === 'INCOME' && styles.typeButtonActive,
-                ]}
-                onPress={() => setType('INCOME')}
-              >
-                <Text style={[
-                  styles.typeButtonText,
-                  type === 'INCOME' && styles.typeButtonTextActive,
-                ]}>Income</Text>
-              </TouchableOpacity>
-            </View>
-
             <Text style={styles.label}>Color</Text>
             <View style={styles.colorGrid}>
               {CATEGORY_COLORS.map((color) => (
