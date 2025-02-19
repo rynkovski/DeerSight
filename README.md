@@ -1,6 +1,10 @@
 # Financial Management App
 A mobile application built with React Native and Expo for managing personal finances.
 
+
+https://github.com/user-attachments/assets/a22c938d-ac86-4d7e-91cf-22dbccd0c457
+
+
 ## Features
 - User Authentication (Login/Register)
 - Multiple Wallet Management
