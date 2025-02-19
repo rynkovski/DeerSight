@@ -174,6 +174,7 @@ export default function TransactionDrawer({
 
             <Text style={styles.label}>Category</Text>
             <ScrollView horizontal style={styles.categoryContainer}>
+              {categories.length === 0 && <Text>No categories found</Text>}
               {categories.map((category) => (
                 <TouchableOpacity
                   key={category.id}
@@ -193,6 +194,7 @@ export default function TransactionDrawer({
 
             <Text style={styles.label}>Wallet</Text>
             <ScrollView horizontal style={styles.walletContainer}>
+              {wallets.length === 0 && <Text>No wallets found</Text>}
               {wallets.map((wallet) => (
                 <TouchableOpacity
                   key={wallet.id}

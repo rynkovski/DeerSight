@@ -1,15 +1,16 @@
-import { View, Text, StyleSheet, FlatList, ScrollView } from "react-native"
-import { FontAwesome } from "@expo/vector-icons"
+import { View, Text, StyleSheet, FlatList } from "react-native"
 import { useAuth } from "@/contexts/AuthContext"
 import { useEffect, useState } from "react"
 import { transactionQueries } from "@/lib/queries"
+import { Ionicons } from "@expo/vector-icons"
 
 type Transaction = {
   id: string
-  type: "income" | "expense"
-  category: string
+  type: "INCOME" | "EXPENSE"
+  category_id: string
   amount: number
   date: string
+  description: string
 }
 
 
@@ -21,6 +22,8 @@ const TransactionsList = () => {
      if (!session) return;
   
      const [transactions, setTransactions] = useState<Transaction[]>([]);
+
+
   
     useEffect(() => {
       const fetchTransactions = async () => {
@@ -37,18 +40,21 @@ const TransactionsList = () => {
   const renderItem = ({ item }: { item: Transaction }) => (
     <View style={styles.transactionItem}>
       <View style={styles.iconContainer}>
-        <FontAwesome
-          name={item.type === "income" ? "arrow-circle-up" : "arrow-circle-down"}
+        <Ionicons
+          name={item.type === "INCOME" ? "arrow-up-circle-outline" : "arrow-down-circle-outline"}
           size={24}
-          color={item.type === "income" ? "green" : "red"}
+          color={item.type === "INCOME" ? "green" : "red"}
         />
       </View>
       <View style={styles.transactionDetails}>
-        <Text style={styles.category}>{item.category}</Text>
-        <Text style={styles.date}>{item.date}</Text>
+
+        <Text style={styles.description}>
+          {item.description}
+        </Text>
+        <Text style={styles.date}>{item.date.slice(0, 10)}</Text>
       </View>
-      <Text style={[styles.amount, item.type === "income" ? styles.income : styles.expense]}>
-        {item.type === "income" ? "+" : "-"}${item.amount.toFixed(2)}
+      <Text style={[styles.amount, item.type === "INCOME" ? styles.income : styles.expense]}>
+       ${item.amount.toFixed(2)}
       </Text>
     </View>
   )
@@ -83,9 +89,10 @@ const styles = StyleSheet.create({
   transactionDetails: {
     flex: 1,
   },
-  category: {
+  description: {
+    color: "#000",
     fontSize: 16,
-    fontWeight: "bold",
+    fontWeight: "semibold",
   },
   date: {
     fontSize: 14,
