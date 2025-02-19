@@ -5,6 +5,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useEffect } from 'react';
 import { useRouter, useSegments } from 'expo-router';
 import { LoadingScreen } from '@/components/LoadingScreen';
+import { SafeAreaWrapper } from '@/components/SafeAreaWrapper';
 
 function AuthMiddleware() {
   const { session, loading } = useAuth();
@@ -38,7 +39,16 @@ function AuthMiddleware() {
 export default function RootLayout() {
   return (
     <AuthProvider>
-      <SafeAreaProvider>
+      <SafeAreaWrapper
+      config={{
+        includeTop: true,
+        includeBottom: true,
+        topBackgroundColor: '#ffffff',
+        bottomBackgroundColor: '#ffffff',
+        additionalTopPadding: 0,
+        additionalBottomPadding: 20,
+      }}
+    >
         <AuthMiddleware />
         <Stack 
           screenOptions={{
@@ -50,7 +60,7 @@ export default function RootLayout() {
           <Stack.Screen name="(auth)" options={{ headerShown: false }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         </Stack>
-      </SafeAreaProvider>
+     </SafeAreaWrapper>
     </AuthProvider>
   );
 }
