@@ -4,8 +4,10 @@ import { Database } from '@/types/supabase';
 
 type Tables = Database['public']['Tables'];
 type Category = Tables['categories']['Row'];
-type Wallet = Tables['wallets']['Row'];
+export type Wallet = Tables['wallets']['Row'];
 type Transaction = Tables['transactions']['Row'];
+export type WalletInsert = Tables['wallets']['Insert'];
+export type CreateWalletInput = Omit<WalletInsert, 'id' | 'created_at' | 'user_id' | 'type'>;
 
 
 export const categoryQueries = {
@@ -80,13 +82,12 @@ export const walletQueries = {
     return data;
   },
 
-  create: async (userId: string, wallet: Omit<Wallet, 'id' | 'created_at' | 'user_id' | 'balance'>) => {
+  create: async (userId: string, wallet: CreateWalletInput) => {
     const { data, error } = await supabase
       .from('wallets')
       .insert({
         ...wallet,
         user_id: userId,
-        balance: 0 // Initial balance
       })
       .select()
       .single();
@@ -108,14 +109,17 @@ export const walletQueries = {
   },
 
   updateBalance: async (walletId: string, amount: number) => {
-    const { data, error } = await supabase.rpc('update_wallet_balance', {
-      wallet_id: walletId,
-      amount_change: amount
-    });
+    const { data, error } = await supabase
+      .from('wallets')
+      .update({ balance: amount })
+      .eq('id', walletId)
+      .select()
+      .single();
     
     if (error) throw error;
     return data;
-  },
+  }
+,
 
   delete: async (walletId: string) => {
     const { error } = await supabase
@@ -177,7 +181,15 @@ export const transactionQueries = {
   ) => {
     const { updateWalletBalance = true, ...transactionData } = transaction;
     
-    // Start a Supabase transaction
+    // Add this logging
+    console.log('Transaction data:', {
+      transaction_data: {
+        ...transactionData,
+        user_id: userId
+      },
+      update_balance: updateWalletBalance
+    });
+    
     const { data, error } = await supabase.rpc('create_transaction', {
       transaction_data: {
         ...transactionData,
@@ -186,7 +198,11 @@ export const transactionQueries = {
       update_balance: updateWalletBalance
     });
 
-    if (error) throw error;
+    // Add this to see the specific error
+    if (error) {
+      console.error('Supabase error:', error);
+      throw error;
+    }
     return data;
   },
 

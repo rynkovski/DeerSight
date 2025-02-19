@@ -17,8 +17,7 @@ export default function WalletsScreen() {
   const [wallets, setWallets] = useState<Wallet[]>([])
   if (!session) return;
 
-  useEffect(() => {
-        const fetchWallets = async () => {
+  const fetchWallets = async () => {
           try {
             const data = await walletQueries.getAll(session.user.id);
             setWallets(data);
@@ -26,6 +25,9 @@ export default function WalletsScreen() {
             console.error('Error fetching WasetWallets:', error);
           }
         };
+
+  useEffect(() => {
+        
     
         fetchWallets();
       }, [wallets]);
@@ -35,7 +37,6 @@ export default function WalletsScreen() {
 
   return (
     <View style={ styles.container}>
-      <View style={isModalVisible && styles.drawerOpen}></View>
       <Text style={styles.title}>Wallets</Text>
       <View style={styles.totalBalanceContainer}>
         <Text style={styles.totalBalanceLabel}>Total Balance</Text>
@@ -43,7 +44,9 @@ export default function WalletsScreen() {
       </View>
       <FlatList
         data={wallets}
-        renderItem={({ item }) => <WalletItem wallet={item} />}
+        renderItem={({ item }) => <WalletItem wallet={item} fetchWallets={() => {
+        fetchWallets();
+        }} setIsLoading={() => {}} />}
         keyExtractor={(item) => item.id}
         style={styles.walletList}
       />
@@ -62,17 +65,7 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: "#fff",
   },
-  drawerOpen:{
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: 1,
-
-    
-  },
+  
   title: {
     fontSize: 24,
     fontWeight: "bold",

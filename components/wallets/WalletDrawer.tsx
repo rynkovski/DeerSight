@@ -13,16 +13,14 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
 import { useAuth } from '@/contexts/AuthContext';
-import { Database } from '@/types/supabase';
-import { walletQueries } from '@/lib/queries';
+import { CreateWalletInput, walletQueries } from '@/lib/queries';
 
-type WalletInsert = Database['public']['Tables']['wallets']['Insert'];
+
 
 export type Wallet = {
   id: string;
   name: string;
   balance: number;
-  type: 'cash' | 'bank' | 'credit' | 'savings';
   currency: 'usd' | 'eur' | 'pln';
 };
 
@@ -35,50 +33,52 @@ export default function WalletDrawer({ visible, onClose }: WalletDrawerProps) {
     const { session } = useAuth();
   const [name, setName] = useState('');
   const [balance, setBalance] = useState('');
-  const [type, setType] = useState<Wallet['type']>('cash');
   const [currency, setCurrency] = useState<Wallet['currency']>('usd');
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   
 
-  const handleAdd = async() => {
-    if (!session) return;
-    if (!name.trim()) {
-      setError('Wallet name is required');
-      return;
+const handleAdd = async () => {
+  if (!session) return;
+  if (!name.trim()) {
+    setError('Wallet name is required');
+    return;
+  }
+
+  const balanceNum = Number(balance);
+  if (!balance || isNaN(balanceNum)) {
+    setError('Valid balance is required');
+    return;
+  }
+
+  setIsLoading(true);
+
+  try {
+    const walletInput: CreateWalletInput = {
+      name: name.trim(),
+      currency: currency,
+      balance: balanceNum,
+    };
+
+    const newWallet = await walletQueries.create(session.user.id, walletInput);
+    
+    // If needed, update the balance separately
+    if (balanceNum !== 0) {
+      await walletQueries.updateBalance(newWallet.id, balanceNum);
     }
-
-    setIsLoading(true);
-
-    if (!balance || isNaN(Number(balance))) {
-      setError('Valid balance is required');
-      return;
-    }
-try{
-
-
-  const newWallet: WalletInsert= {
-    user_id: session.user.id,
-    name: name.trim(),
-    balance: Number(balance),
-currency: currency
-  };
-await walletQueries.create(session.user.id, newWallet);
-
 
     setName('');
     setBalance('');
-    setType('cash');
     setCurrency('usd');
     setError(null);
     onClose();
-} catch (err) {
-  console.error('Error adding wallet:', err);
-  setError('An error occurred while adding the wallet');
-}finally{
-  setIsLoading(false);
+  } catch (err) {
+    console.error('Error adding wallet:', err);
+    setError('An error occurred while adding the wallet');
+  } finally {
+    setIsLoading(false);
   }
-}
+};
   
 
   return (
@@ -126,34 +126,6 @@ await walletQueries.create(session.user.id, newWallet);
               keyboardType="numeric"
             />
 
-
-            <Text style={styles.label}>Wallet Currency</Text>
-            <View style={styles.pickerContainer}>
-              <Picker
-                selectedValue={currency}
-                onValueChange={(itemValue) => setCurrency(itemValue)}
-                style={styles.picker}
-              >
-                <Picker.Item label="$" value="usd" />
-                <Picker.Item label="€" value="eur" />
-                <Picker.Item label="zł" value="pln" />
-              </Picker>
-            </View>
-            <Text style={styles.label}>Wallet Type</Text>
-            <View style={styles.pickerContainer}>
-              <Picker
-                selectedValue={type}
-                onValueChange={(itemValue) => setType(itemValue as Wallet['type'])}
-                style={styles.picker}
-              >
-                <Picker.Item label="Cash" value="cash" />
-                <Picker.Item label="Bank" value="bank" />
-                <Picker.Item label="Credit" value="credit" />
-                <Picker.Item label="Savings" value="savings" />
-              </Picker>
-            </View>
-
-            {/* Add button */}
             <TouchableOpacity
               style={styles.addButton}
               onPress={handleAdd}
@@ -172,6 +144,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'flex-end',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+
   },
   content: {
     backgroundColor: '#fff',

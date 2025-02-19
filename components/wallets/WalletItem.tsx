@@ -1,6 +1,8 @@
+import { useAuth } from '@/contexts/AuthContext';
+import { walletQueries } from '@/lib/queries';
 import { Ionicons } from '@expo/vector-icons';
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 
 
 export type Wallet = {
@@ -14,8 +16,8 @@ export type Wallet = {
 
 
 
-const WalletItem = ({ wallet }: { wallet: Wallet }) => {
- 
+const WalletItem = ({ wallet,fetchWallets,setIsLoading }: { wallet: Wallet, fetchWallets: () => void,setIsLoading: (isLoading: boolean) => void }) => {
+
   function renderCurrency(currency: Wallet['currency']): string {
   switch (currency) {
     case 'usd':
@@ -28,6 +30,37 @@ const WalletItem = ({ wallet }: { wallet: Wallet }) => {
       return '';
   }
 }
+
+
+
+const handleDeleteWallet = async (walletId: string) => {
+    Alert.alert(
+      'Delete Wallet',
+      'Are you sure you want to delete this wallet?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              setIsLoading(true);
+              await walletQueries.delete(walletId);
+              await fetchWallets(); 
+            } catch (error) {
+              console.error('Error deleting wallet:', error);
+              Alert.alert('Error', 'Failed to delete wallet');
+            } finally {
+              setIsLoading(false);
+            }
+          },
+        },
+      ]
+    );
+  };
   return (
     <View style={styles.walletItem}>
       <View style={styles.iconContainer}>
@@ -35,11 +68,16 @@ const WalletItem = ({ wallet }: { wallet: Wallet }) => {
       </View>
       <View style={styles.walletInfo}>
         <Text style={styles.walletName}>{wallet.name}</Text>
-        <Text style={styles.walletType}>{wallet.type}</Text>
       </View>
       <Text style={[styles.walletBalance, wallet.balance < 0 && styles.negativeBalance]}>
      {wallet.balance.toFixed(2)}  {renderCurrency(wallet.currency)}
       </Text>
+         <TouchableOpacity
+              style={styles.deleteButton}
+              onPress={() => handleDeleteWallet(wallet.id)}
+            >
+            <Ionicons name='trash' size={24} color='red' />
+            </TouchableOpacity>
     </View>
   );
 };
@@ -75,6 +113,9 @@ const styles = StyleSheet.create({
   },
   negativeBalance: {
     color: 'red',
+  },
+   deleteButton: {
+    padding: 8,
   },
 });
 
